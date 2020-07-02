@@ -35,30 +35,35 @@ languages.forEach(lang => {
 
 function main(args: minimist.ParsedArgs) {
   const {outDir, testDataDir, polyfillLocalesOutFile} = args;
-
+  console.log(args);
   languages.forEach(lang => {
-    outputFileSync(
-      join(outDir, `${lang}.js`),
-      `/* @generated */
+    if (outDir) {
+      outputFileSync(
+        join(outDir, `${lang}.js`),
+        `/* @generated */
 // prettier-ignore
 if (Intl.PluralRules && typeof Intl.PluralRules.__addLocaleData === 'function') {
   Intl.PluralRules.__addLocaleData(${serialize(allData[lang])})
 }
 `
-    );
-    outputFileSync(
-      join(testDataDir, `${lang}.js`),
-      `/* @generated */
+      );
+    }
+    if (testDataDir) {
+      outputFileSync(
+        join(testDataDir, `${lang}.js`),
+        `/* @generated */
 // prettier-ignore
 module.exports = ${serialize(allData[lang])}
 `
-    );
+      );
+    }
   });
 
-  // Aggregate all into ../polyfill-locales.js
-  outputFileSync(
-    polyfillLocalesOutFile,
-    `/* @generated */
+  if (polyfillLocalesOutFile) {
+    // Aggregate all into ../polyfill-locales.js
+    outputFileSync(
+      polyfillLocalesOutFile,
+      `/* @generated */
 // prettier-ignore
 require('./polyfill')
 if (Intl.PluralRules && typeof Intl.PluralRules.__addLocaleData === 'function') {
@@ -69,7 +74,8 @@ ${Object.keys(allData)
   )
 }
 `
-  );
+    );
+  }
 }
 if (require.main === module) {
   main(minimist(process.argv));
